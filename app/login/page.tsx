@@ -96,7 +96,8 @@ export default function LoginPage() {
                   ))}
                 </select>
                 <input
-                  type="tel"
+                  type="text"
+                  inputMode="tel"
                   placeholder="98765 43210"
                   value={localNumber}
                   onChange={(e) => setLocalNumber(e.target.value)}
