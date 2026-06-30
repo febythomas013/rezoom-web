@@ -132,12 +132,14 @@ export async function POST(req: NextRequest) {
     userId, name, source: 'resume' as const,
   }));
 
-  if (experienceData.length > 0) await prisma.experience.createMany({ data: experienceData });
-  if (educationData.length > 0) await prisma.education.createMany({ data: educationData });
-  if (leadershipData.length > 0) await prisma.leadership.createMany({ data: leadershipData });
-  if (certificationData.length > 0) await prisma.certification.createMany({ data: certificationData });
-  if (projectData.length > 0) await prisma.project.createMany({ data: projectData });
-  if (languageData.length > 0) await prisma.language.createMany({ data: languageData });
+  // skipDuplicates relies on @@unique constraints — re-importing the same resume
+  // only adds genuinely new entries instead of doubling everything
+  if (experienceData.length > 0) await prisma.experience.createMany({ data: experienceData, skipDuplicates: true });
+  if (educationData.length > 0) await prisma.education.createMany({ data: educationData, skipDuplicates: true });
+  if (leadershipData.length > 0) await prisma.leadership.createMany({ data: leadershipData, skipDuplicates: true });
+  if (certificationData.length > 0) await prisma.certification.createMany({ data: certificationData, skipDuplicates: true });
+  if (projectData.length > 0) await prisma.project.createMany({ data: projectData, skipDuplicates: true });
+  if (languageData.length > 0) await prisma.language.createMany({ data: languageData, skipDuplicates: true });
   if (skillData.length > 0) await prisma.skill.createMany({ data: skillData, skipDuplicates: true });
 
   await prisma.user.update({

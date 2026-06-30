@@ -19,6 +19,27 @@ export async function GET() {
   return NextResponse.json({ experiences, education, certifications, projects, skills, leadership, languages });
 }
 
+export async function PATCH(req: NextRequest) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { table, id, data } = await req.json();
+  const allowed = ['experience', 'education', 'certification', 'project', 'skill', 'leadership', 'language'];
+  if (!allowed.includes(table)) return NextResponse.json({ error: 'Invalid table' }, { status: 400 });
+
+  // Verify ownership before updating
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const model = (prisma as any)[table] as {
+    findFirst: (args: unknown) => Promise<{ userId: string } | null>;
+    update: (args: unknown) => Promise<unknown>;
+  };
+  const record = await model.findFirst({ where: { id, userId: session.userId } });
+  if (!record) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  const updated = await model.update({ where: { id }, data });
+  return NextResponse.json(updated);
+}
+
 export async function DELETE(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

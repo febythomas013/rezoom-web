@@ -82,6 +82,10 @@ model Experience {
   createdAt   DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // company/period are null for voice-sourced entries, so Postgres treats those rows as
+  // distinct (NULL never equals NULL in a unique index) — this only dedupes true PDF re-imports
+  @@unique([userId, title, company, period])
 }
 
 model Education {
@@ -95,6 +99,8 @@ model Education {
   createdAt   DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, degree, institution])
 }
 
 model Leadership {
@@ -109,6 +115,8 @@ model Leadership {
   createdAt    DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, title, organization])
 }
 
 model Certification {
@@ -122,6 +130,8 @@ model Certification {
   createdAt     DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
 }
 
 model Project {
@@ -135,6 +145,8 @@ model Project {
   createdAt   DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, title])
 }
 
 model Skill {
@@ -158,6 +170,8 @@ model Language {
   createdAt   DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, language])
 }
 
 model VoiceSession {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import EditItemModal, { FieldConfig } from '@/components/EditItemModal';
 
 type Item = { id: string; [key: string]: unknown };
 type DataStore = {
@@ -41,10 +42,63 @@ const DISPLAY_FIELDS: Record<TabKey, string[]> = {
   languages: ['language', 'proficiency'],
 };
 
+const TABLE_MAP: Record<TabKey, string> = {
+  experiences: 'experience', education: 'education', certifications: 'certification',
+  projects: 'project', skills: 'skill', leadership: 'leadership', languages: 'language',
+};
+
+const EDIT_FIELDS: Record<TabKey, FieldConfig[]> = {
+  experiences: [
+    { key: 'title', label: 'Job title', type: 'text' },
+    { key: 'company', label: 'Company', type: 'text' },
+    { key: 'location', label: 'Location', type: 'text' },
+    { key: 'period', label: 'Dates', type: 'daterange' },
+    { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'skills', label: 'Skills', type: 'taglist' },
+  ],
+  education: [
+    { key: 'degree', label: 'Degree', type: 'text' },
+    { key: 'institution', label: 'Institution', type: 'text' },
+    { key: 'year', label: 'Year', type: 'text' },
+    { key: 'cgpa', label: 'CGPA', type: 'text' },
+  ],
+  certifications: [
+    { key: 'name', label: 'Certification name', type: 'text' },
+    { key: 'issuer', label: 'Issuer', type: 'text' },
+    { key: 'issuedYear', label: 'Year issued', type: 'text' },
+  ],
+  projects: [
+    { key: 'title', label: 'Project title', type: 'text' },
+    { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'skills', label: 'Technologies', type: 'taglist' },
+    { key: 'link', label: 'Link', type: 'text' },
+  ],
+  skills: [
+    { key: 'name', label: 'Skill', type: 'text' },
+  ],
+  leadership: [
+    { key: 'title', label: 'Role', type: 'text' },
+    { key: 'organization', label: 'Organization', type: 'text' },
+    { key: 'location', label: 'Location', type: 'text' },
+    { key: 'period', label: 'Dates', type: 'daterange' },
+    { key: 'bullets', label: 'Details', type: 'bulletlist' },
+  ],
+  languages: [
+    { key: 'language', label: 'Language', type: 'text' },
+    { key: 'proficiency', label: 'Proficiency', type: 'text' },
+  ],
+};
+
+const TAB_SINGULAR: Record<TabKey, string> = {
+  experiences: 'experience', education: 'education', certifications: 'certification',
+  projects: 'project', skills: 'skill', leadership: 'leadership role', languages: 'language',
+};
+
 export default function ExperiencesPage() {
   const [data, setData] = useState<DataStore | null>(null);
   const [tab, setTab] = useState<TabKey>('experiences');
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState('');
   const [uploadError, setUploadError] = useState('');
@@ -66,6 +120,16 @@ export default function ExperiencesPage() {
     });
     await load();
     setDeleting(null);
+  }
+
+  async function saveEdit(itemId: string, updatedData: Record<string, unknown>) {
+    await fetch('/api/experiences', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: TABLE_MAP[tab], id: itemId, data: updatedData }),
+    });
+    await load();
+    setEditingItem(null);
   }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -96,10 +160,6 @@ export default function ExperiencesPage() {
 
   const items = data[tab] ?? [];
   const fields = DISPLAY_FIELDS[tab];
-  const tableMap: Record<TabKey, string> = {
-    experiences: 'experience', education: 'education', certifications: 'certification',
-    projects: 'project', skills: 'skill', leadership: 'leadership', languages: 'language',
-  };
 
   return (
     <div className="max-w-4xl">
@@ -170,17 +230,39 @@ export default function ExperiencesPage() {
                   );
                 })}
               </div>
-              <button
-                onClick={() => remove(tableMap[tab], item.id as string)}
-                disabled={deleting === item.id}
-                className="text-gray-400 hover:text-red-500 text-lg shrink-0 transition-colors disabled:opacity-30"
-                title="Delete"
-              >
-                ×
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  onClick={() => setEditingItem(item)}
+                  className="text-gray-400 hover:text-blue-600 transition-colors"
+                  title="Edit"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => remove(TABLE_MAP[tab], item.id as string)}
+                  disabled={deleting === item.id}
+                  className="text-gray-400 hover:text-red-500 text-lg transition-colors disabled:opacity-30"
+                  title="Delete"
+                >
+                  ×
+                </button>
+              </div>
             </div>
           ))}
         </div>
+      )}
+
+      {editingItem && (
+        <EditItemModal
+          title={TAB_SINGULAR[tab]}
+          fields={EDIT_FIELDS[tab]}
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSave={(data) => saveEdit(editingItem.id, data)}
+        />
       )}
     </div>
   );
