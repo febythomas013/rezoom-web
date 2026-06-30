@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Logo from '@/components/Logo';
 
 const COUNTRY_CODES = [
   { code: '+91', country: 'IN', label: '🇮🇳 +91' },
@@ -70,8 +71,8 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <Link href="/" className="block text-center mb-8">
-          <span className="text-2xl font-bold tracking-tight text-gray-900">ReZoom</span>
+        <Link href="/" className="flex justify-center mb-8">
+          <Logo />
         </Link>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">

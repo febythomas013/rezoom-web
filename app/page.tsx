@@ -1,11 +1,12 @@
 import Link from 'next/link';
+import Logo from '@/components/Logo';
 
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900">
       {/* Nav */}
       <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-100">
-        <span className="text-xl font-bold tracking-tight">ReZoom</span>
+        <Logo />
         <Link href="/login" className="text-sm font-medium text-blue-600 hover:text-blue-700">
           Sign in →
         </Link>
@@ -13,7 +14,7 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-8 pt-24 pb-16 text-center">
-        <h1 className="text-5xl font-bold tracking-tight leading-tight mb-6">
+        <h1 className="text-5xl font-bold text-gray-900 tracking-tight leading-tight mb-6">
           Track your wins.<br />Generate tailored resumes.
         </h1>
         <p className="text-xl text-gray-500 mb-10 max-w-xl mx-auto">
@@ -29,7 +30,7 @@ export default function LandingPage() {
 
       {/* How it works */}
       <section className="max-w-4xl mx-auto px-8 py-16">
-        <h2 className="text-2xl font-bold text-center mb-12">How it works</h2>
+        <h2 className="text-2xl font-bold text-gray-900 text-center mb-12">How it works</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             {

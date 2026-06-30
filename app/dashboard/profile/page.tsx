@@ -61,14 +61,14 @@ export default function ProfilePage() {
         value={form[key]}
         placeholder={placeholder}
         onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
   );
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-2xl font-bold mb-1">Profile</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Profile</h1>
       <p className="text-gray-500 text-sm mb-8">This information appears on your generated resumes.</p>
 
       <form onSubmit={save} className="space-y-5">
@@ -109,7 +109,7 @@ export default function ProfilePage() {
           <select
             value={form.checkinFrequency}
             onChange={(e) => setForm((f) => ({ ...f, checkinFrequency: e.target.value }))}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {FREQUENCY_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>

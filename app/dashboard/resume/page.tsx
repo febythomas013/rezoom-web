@@ -35,7 +35,7 @@ export default function ResumePage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-1">Resume builder</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Resume builder</h1>
       <p className="text-sm text-gray-500 mb-8">
         Generate a resume from your logged experiences. Takes about 20 seconds.
       </p>
@@ -74,7 +74,7 @@ export default function ResumePage() {
               placeholder="Paste the full job description here..."
               rows={8}
               required={mode === 'tailored'}
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         )}
