@@ -22,7 +22,13 @@ export async function POST(req: NextRequest) {
   const whatsappId = formatWhatsAppId(digits);
   const user = await prisma.user.findUnique({ where: { whatsappId } });
 
-  await sendOtp(digits, code);
+  try {
+    await sendOtp(digits, code);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[request-otp] Twilio error:', msg);
+    return NextResponse.json({ error: `WhatsApp send failed: ${msg}` }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, isNewUser: !user });
 }
