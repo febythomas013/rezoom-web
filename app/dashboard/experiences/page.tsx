@@ -3,6 +3,33 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import EditItemModal, { FieldConfig } from '@/components/EditItemModal';
 
+function SourceBadge({ source }: { source: string }) {
+  if (source === 'voice') return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+      </svg>
+      Voice
+    </span>
+  );
+  if (source === 'manual') return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Manual
+    </span>
+  );
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+      </svg>
+      PDF
+    </span>
+  );
+}
+
 type Item = { id: string; [key: string]: unknown };
 type DataStore = {
   experiences: Item[];
@@ -267,13 +294,19 @@ export default function ExperiencesPage() {
           {items.map((item) => (
             <div key={item.id} className="bg-white rounded-xl border border-gray-200 px-5 py-4 flex items-start justify-between gap-4 shadow-sm">
               <div className="flex-1 min-w-0">
-                {fields.map((f) => {
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-gray-900 text-sm">
+                    {formatValue(item[fields[0]])}
+                  </span>
+                  <SourceBadge source={item.source as string} />
+                </div>
+                {fields.slice(1).map((f) => {
                   const val = item[f];
                   if (!val && val !== 0) return null;
                   const formatted = formatValue(val);
                   if (!formatted) return null;
                   return (
-                    <span key={f} className={f === fields[0] ? 'block font-medium text-gray-900 text-sm' : 'block text-xs text-gray-500 mt-0.5'}>
+                    <span key={f} className="block text-xs text-gray-500 mt-0.5">
                       {formatted}
                     </span>
                   );
