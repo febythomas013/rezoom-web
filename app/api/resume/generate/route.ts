@@ -132,6 +132,7 @@ function generatePdf(resumeData: any): Promise<Buffer> {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -201,4 +202,9 @@ export async function POST(req: NextRequest) {
       'Content-Disposition': 'attachment; filename="resume.pdf"',
     },
   });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[resume/generate]', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
