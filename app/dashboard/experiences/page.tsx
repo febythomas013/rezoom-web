@@ -213,25 +213,27 @@ export default function ExperiencesPage() {
         {uploadError && <p className="text-red-500 text-xs mt-3">{uploadError}</p>}
       </div>
 
-      {/* Tabs + Add button */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
-          {TABS.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-                tab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {label}
-              <span className="ml-1.5 text-xs text-gray-400">({data[key]?.length ?? 0})</span>
-            </button>
-          ))}
-        </div>
+      {/* Tabs — full width */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto mb-3">
+        {TABS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+              tab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {label}
+            <span className="ml-1.5 text-xs text-gray-400">({data[key]?.length ?? 0})</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Add button — separate row, right-aligned */}
+      <div className="flex justify-end mb-4">
         <button
           onClick={openNew}
-          className="ml-3 flex items-center gap-1.5 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shrink-0"
+          className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
