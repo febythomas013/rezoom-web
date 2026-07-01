@@ -120,7 +120,12 @@ export default function ExperiencesPage() {
     setData(await res.json());
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    // Poll every 15 seconds so WhatsApp voice updates appear automatically
+    const interval = setInterval(load, 15000);
+    return () => clearInterval(interval);
+  }, [load]);
 
   async function remove(table: string, id: string) {
     setDeleting(id);
@@ -190,9 +195,18 @@ export default function ExperiencesPage() {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">My data</h1>
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="text-2xl font-bold text-gray-900">My data</h1>
+        <button onClick={load} className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M23 4v6h-6M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
       <p className="text-sm text-gray-500 mb-6">
-        Everything imported from your resume and captured via WhatsApp voice updates.
+        Everything imported from your resume and captured via WhatsApp voice updates. Updates every 15 seconds.
       </p>
 
       {/* Upload card */}
