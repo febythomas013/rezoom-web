@@ -32,23 +32,35 @@ function buildPeriod(startMonth: string, startYear: string, endMonth: string, en
   return [start, end].filter(Boolean).join(' – ');
 }
 
-export type FieldType = 'text' | 'textarea' | 'taglist' | 'bulletlist' | 'daterange';
+// bullettext: stored as a plain String in DB, edited as one bullet per line
+function descriptionToBullets(description: unknown): string {
+  const str = typeof description === 'string' ? description : '';
+  if (!str) return '';
+  // Already contains newlines → use as-is
+  if (str.includes('\n')) return str;
+  // Single paragraph: split on ". " boundaries for initial editing convenience
+  return str.split(/\.\s+(?=[A-Z])/).map((s) => s.replace(/\.$/, '').trim()).filter(Boolean).join('\n');
+}
+
+export type FieldType = 'text' | 'textarea' | 'bullettext' | 'taglist' | 'bulletlist' | 'daterange';
 export interface FieldConfig { key: string; label: string; type: FieldType; }
 
 export default function EditItemModal({
-  title, fields, item, onClose, onSave,
+  title, fields, item, onClose, onSave, isNew,
 }: {
   title: string;
   fields: FieldConfig[];
   item: Record<string, unknown>;
   onClose: () => void;
   onSave: (data: Record<string, unknown>) => Promise<void>;
+  isNew?: boolean;
 }) {
   const buildInitial = () => {
     const initial: Record<string, unknown> = {};
     for (const f of fields) {
       if (f.type === 'taglist') initial[f.key] = ((item[f.key] as string[]) || []).join(', ');
       else if (f.type === 'bulletlist') initial[f.key] = ((item[f.key] as string[]) || []).join('\n');
+      else if (f.type === 'bullettext') initial[f.key] = descriptionToBullets(item[f.key]);
       else if (f.type === 'daterange') Object.assign(initial, parsePeriod(item[f.key]));
       else initial[f.key] = item[f.key] ?? '';
     }
@@ -70,6 +82,9 @@ export default function EditItemModal({
         data[f.key] = String(form[f.key] || '').split(',').map((s) => s.trim()).filter(Boolean);
       } else if (f.type === 'bulletlist') {
         data[f.key] = String(form[f.key] || '').split('\n').map((s) => s.trim()).filter(Boolean);
+      } else if (f.type === 'bullettext') {
+        // Store as newline-separated string for Claude to read as structured input
+        data[f.key] = String(form[f.key] || '').trim() || null;
       } else if (f.type === 'daterange') {
         data[f.key] = buildPeriod(
           String(form.startMonth || ''), String(form.startYear || ''),
@@ -90,7 +105,9 @@ export default function EditItemModal({
         className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-gray-900 mb-5">Edit {title}</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-5">
+          {isNew ? `Add ${title}` : `Edit ${title}`}
+        </h2>
 
         <div className="space-y-4">
           {fields.map((f) => {
@@ -99,19 +116,13 @@ export default function EditItemModal({
                 <div key={f.key}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
                   <div className="flex items-center flex-wrap gap-2">
-                    <select
-                      value={String(form.startMonth || '')}
-                      onChange={(e) => set('startMonth', e.target.value)}
-                      className="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
+                    <select value={String(form.startMonth || '')} onChange={(e) => set('startMonth', e.target.value)}
+                      className="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                       <option value="">Month</option>
                       {MONTHS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                     </select>
-                    <select
-                      value={String(form.startYear || '')}
-                      onChange={(e) => set('startYear', e.target.value)}
-                      className="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
+                    <select value={String(form.startYear || '')} onChange={(e) => set('startYear', e.target.value)}
+                      className="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                       <option value="">Year</option>
                       {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
                     </select>
@@ -120,19 +131,13 @@ export default function EditItemModal({
                       <span className="text-sm text-gray-500 px-1">Present</span>
                     ) : (
                       <>
-                        <select
-                          value={String(form.endMonth || '')}
-                          onChange={(e) => set('endMonth', e.target.value)}
-                          className="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
+                        <select value={String(form.endMonth || '')} onChange={(e) => set('endMonth', e.target.value)}
+                          className="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                           <option value="">Month</option>
                           {MONTHS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                         </select>
-                        <select
-                          value={String(form.endYear || '')}
-                          onChange={(e) => set('endYear', e.target.value)}
-                          className="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
+                        <select value={String(form.endYear || '')} onChange={(e) => set('endYear', e.target.value)}
+                          className="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                           <option value="">Year</option>
                           {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
                         </select>
@@ -140,13 +145,38 @@ export default function EditItemModal({
                     )}
                   </div>
                   <label className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(form.present)}
-                      onChange={(e) => set('present', e.target.checked)}
-                    />
+                    <input type="checkbox" checked={Boolean(form.present)} onChange={(e) => set('present', e.target.checked)} />
                     Currently here / ongoing
                   </label>
+                </div>
+              );
+            }
+
+            if (f.type === 'bullettext') {
+              return (
+                <div key={f.key}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {f.label}
+                    <span className="text-gray-400 font-normal"> — one achievement per line</span>
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      value={String(form[f.key] ?? '')}
+                      onChange={(e) => set(f.key, e.target.value)}
+                      rows={5}
+                      placeholder="Led the team to deliver X result&#10;Reduced processing time from 2 days to 1 hour&#10;Managed a cross-functional team of 7 members"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 pl-5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {/* Bullet guides — shown when textarea has content */}
+                    {String(form[f.key] || '').split('\n').length > 0 && (
+                      <div className="absolute left-1.5 top-2 pointer-events-none select-none text-gray-400 text-sm leading-[1.6rem]">
+                        {String(form[f.key] || '').split('\n').map((_, i) => (
+                          <div key={i}>•</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Press Enter to add a new bullet point</p>
                 </div>
               );
             }
@@ -184,18 +214,11 @@ export default function EditItemModal({
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="flex-1 border border-gray-200 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
+          <button onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
             Cancel
           </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
-            {saving ? 'Saving...' : 'Save changes'}
+          <button onClick={handleSave} disabled={saving} className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            {saving ? 'Saving...' : isNew ? 'Add' : 'Save changes'}
           </button>
         </div>
       </div>
